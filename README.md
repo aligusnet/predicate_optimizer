@@ -1,3 +1,2 @@
-# C++ Starter Template Project
+# Predicate optimizer
 
-This is a C++ starter project template for getting up and running with C++ quickly.

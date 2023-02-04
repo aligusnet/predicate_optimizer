@@ -1,4 +1,4 @@
-add_executable(app test.cpp)
+add_executable(app quine_mccluskey.cpp quine_mccluskey_test.cpp)
 
 target_link_libraries(app catch2)
 
