@@ -9,12 +9,16 @@ namespace predicate_optimizer {
 using Bitset = std::bitset<16>;
 
 struct Minterm {
-    Minterm(Bitset bitset, Bitset removedBits)
-        : bitset(std::move(bitset)), enabledBits(std::move(removedBits)), combined(false) {}
+    Minterm(Bitset bitset, Bitset mask)
+        : bitset(std::move(bitset)), mask(std::move(mask)), coveredMinterms() {}
+
+    Minterm(Bitset bitset, Bitset mask, std::vector<unsigned> coveredMinterms)
+        : bitset(std::move(bitset)), mask(std::move(mask)), coveredMinterms(coveredMinterms) {}
 
     Bitset bitset;
-    Bitset enabledBits;
-    bool combined;
+    Bitset mask;
+    // Indexes of covered minterms.
+    std::vector<unsigned> coveredMinterms;
 };
 
 bool operator==(const Minterm& lhs, const Minterm& rhs);
@@ -32,8 +36,7 @@ struct hash<predicate_optimizer::Minterm> {
     using result_type = size_t;
 
     result_type operator()(const predicate_optimizer::Minterm& mt) const {
-        return mt.bitset.to_ullong() ^ (mt.enabledBits.to_ullong() << 1) ^
-            (static_cast<size_t>(mt.combined) << 4);
+        return mt.bitset.to_ullong() ^ (mt.mask.to_ullong() << 1);
     }
 };
 }  // namespace std

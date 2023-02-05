@@ -1,5 +1,4 @@
 #include "Catch2/catch_amalgamated.hpp"
-#include <iostream>
 #include <unordered_set>
 
 #include "quine_mccluskey.h"
@@ -18,7 +17,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"11"_b, mask},
         };
         std::unordered_set<Minterm> expectedResult{
-            {"10"_b, "10"_b},
+            {"10"_b, "10"_b, {0, 1}},
         };
 
         auto result = quine_mccluskey(std::move(minterms));
@@ -32,7 +31,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"101"_b, mask},
         };
         std::unordered_set<Minterm> expectedResult{
-            {"101"_b, "101"_b},
+            {"101"_b, "101"_b, {0, 1}},
         };
 
         auto result = quine_mccluskey(std::move(minterms));
@@ -47,8 +46,8 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"110"_b, mask},
         };
         std::unordered_set<Minterm> expectedResult{
-            {"101"_b, "101"_b},
-            {"110"_b, "110"_b},
+            {"101"_b, "101"_b, {0, 1}},
+            {"110"_b, "110"_b, {0, 2}},
         };
 
         auto result = quine_mccluskey(std::move(minterms));
@@ -64,7 +63,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"0101"_b, mask},
         };
         std::unordered_set<Minterm> expectedResult{
-            {"0000"_b, "1010"_b},
+            {"0000"_b, "1010"_b, {0, 1, 2, 3}},
         };
 
         auto result = quine_mccluskey(std::move(minterms));
@@ -79,8 +78,9 @@ TEST_CASE("Quine-mcCluskey", "") {
                                       {"0101"_b, mask},
                                       {"0111"_b, mask},
                                       {"1011"_b, mask}};
-        std::unordered_set<Minterm> expectedResult{
-            {"1011"_b, "1111"_b}, {"0101"_b, "1101"_b}, {"0000"_b, "1010"_b}};
+        std::unordered_set<Minterm> expectedResult{{"1011"_b, "1111"_b, {5}},
+                                                   {"0101"_b, "1101"_b, {3, 4}},
+                                                   {"0000"_b, "1010"_b, {0, 1, 2, 3}}};
 
         auto result = quine_mccluskey(std::move(minterms));
         REQUIRE(expectedResult == result);
@@ -98,12 +98,12 @@ TEST_CASE("Quine-mcCluskey", "") {
         };
 
         std::unordered_set<Minterm> expectedResult{
-            {"000"_b, "101"_b},
-            {"000"_b, "011"_b},
-            {"010"_b, "110"_b},
-            {"100"_b, "110"_b},
-            {"011"_b, "011"_b},
-            {"101"_b, "101"_b},
+            {"000"_b, "101"_b, {0, 1}},
+            {"000"_b, "011"_b, {0, 2}},
+            {"010"_b, "110"_b, {1, 3}},
+            {"100"_b, "110"_b, {2, 4}},
+            {"011"_b, "011"_b, {3, 5}},
+            {"101"_b, "101"_b, {4, 5}},
         };
 
         auto result = quine_mccluskey(std::move(minterms));
