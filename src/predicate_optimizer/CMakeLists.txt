@@ -3,6 +3,9 @@ add_executable(app
     quine_mccluskey_test.cpp
     petrick.cpp
     petrick_test.cpp
+    expression.cpp
+    expression_rewrite.cpp
+    expression_rewrite_test.cpp
 )
 
 target_link_libraries(app catch2)
