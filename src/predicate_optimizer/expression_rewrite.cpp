@@ -32,10 +32,6 @@ struct NotRemoval {
         return result;
     }
 
-    Expression operator()(const Expression& expr, ConstExpression&) {
-        return expr;
-    }
-
     bool inNot{false};
 
     static LogicalOperator negate(LogicalOperator op) {
@@ -73,9 +69,140 @@ struct NotRemoval {
         }
     }
 };
+
+void move(std::vector<Expression>& target, std::vector<Expression>& source) {
+    if (target.empty()) {
+        target.swap(source);
+    } else {
+        target.reserve(target.size() + source.size());
+        std::move(begin(source), end(source), std::back_inserter(target));
+    }
+}
+
+struct DNFTransformer {
+    Expression operator()(const Expression&, LogicalExpression& expr) {
+        return processLogicalExpression(expr);
+    }
+
+    Expression processLogicalExpression(LogicalExpression& expr) {
+        switch (expr.op) {
+            case LogicalOperator::And:
+                return processAndExpression(std::move(expr));
+            case LogicalOperator::Or:
+                return processOrExpression(std::move(expr));
+        }
+    }
+
+    void flattenAndExprChildren(std::vector<Expression>& children) {
+        std::vector<Expression> newChildren{};
+
+        for (auto& child : children) {
+            if (child.is<LogicalExpression>()) {
+                auto expr = child.cast<LogicalExpression>();
+                assert(expr->op == LogicalOperator::And);
+                move(newChildren, expr->children);
+            } else {
+                newChildren.emplace_back(std::move(child));
+            }
+        }
+
+        children.swap(newChildren);
+    }
+
+    void buildAndExpressions(std::vector<Expression> children,
+                             const std::vector<LogicalExpression>& ors,
+                             size_t orIndex,
+                             std::vector<Expression>& result) {
+        if (ors.size() == orIndex) {
+            flattenAndExprChildren(children);
+            result.push_back(
+                Expression::make<LogicalExpression>(LogicalOperator::And, std::move(children)));
+        } else {
+            auto& orExpr = ors[orIndex];
+            for (size_t childIndex = 0; childIndex < orExpr.children.size(); ++childIndex) {
+                if (childIndex == 0) {
+                    children.push_back(orExpr.children[childIndex]);
+                } else {
+                    children.back() = orExpr.children[childIndex];
+                }
+                buildAndExpressions(children, ors, orIndex + 1, result);
+            }
+        }
+    }
+
+    Expression processAndExpression(LogicalExpression&& expr) {
+        std::vector<Expression> ands{};
+        std::vector<LogicalExpression> ors{};
+
+        for (auto&& child : expr.children) {
+            if (child.is<LogicalExpression>()) {
+                auto processed = processLogicalExpression(*child.cast<LogicalExpression>());
+                auto childExpr = processed.cast<LogicalExpression>();
+
+                switch (childExpr->op) {
+                    case LogicalOperator::And:
+                        move(ands, childExpr->children);
+                        break;
+                    case LogicalOperator::Or:
+                        ors.push_back(std::move(*childExpr));
+                        break;
+                }
+            } else {
+                ands.emplace_back(std::move(child));
+            }
+        }
+
+        if (ors.empty()) {
+            return Expression::make<LogicalExpression>(LogicalOperator::And, std::move(ands));
+        }
+
+        std::vector<Expression> children{};
+        buildAndExpressions(ands, ors, 0, children);
+
+        return Expression::make<LogicalExpression>(LogicalOperator::Or, std::move(children));
+    }
+
+    Expression processOrExpression(LogicalExpression&& expr) {
+        std::vector<Expression> children{};
+
+        for (auto&& child : expr.children) {
+            if (child.is<LogicalExpression>()) {
+                auto processed = processLogicalExpression(*child.cast<LogicalExpression>());
+                auto childExpr = processed.cast<LogicalExpression>();
+                switch (childExpr->op) {
+                    case LogicalOperator::And:
+                        children.emplace_back(std::move(processed));
+                    case LogicalOperator::Or:
+                        move(children, childExpr->children);
+                }
+            } else {
+                children.emplace_back(std::move(child));
+            }
+        }
+
+        return Expression::make<LogicalExpression>(LogicalOperator::Or, std::move(children));
+    }
+
+    Expression operator()(const Expression&, ComparisonExpression& expr) {
+        return Expression::make<ComparisonExpression>(expr);
+    }
+
+    Expression operator()(const Expression&, InExpression& expr) {
+        return Expression::make<InExpression>(expr);
+    }
+
+    Expression operator()(const Expression&, NotExpression& expr) {
+        throw std::runtime_error("NotExpression is not expected");
+    }
+};
 }  // namespace
 
 Expression removeNotExpressions(Expression root) {
     return root.visit(NotRemoval{});
 }
+
+Expression transformToDNF(Expression expression) {
+    return expression.visit(DNFTransformer{});
+}
+
 }  // namespace predicate_optimizer

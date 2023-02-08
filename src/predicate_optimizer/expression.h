@@ -11,7 +11,6 @@ struct LogicalExpression;
 struct ComparisonExpression;
 struct InExpression;
 struct NotExpression;
-struct ConstExpression;
 
 using Expression =
     mongodb::PolyValue<LogicalExpression, ComparisonExpression, InExpression, NotExpression>;
