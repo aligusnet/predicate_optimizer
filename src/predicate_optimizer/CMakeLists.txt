@@ -1,5 +1,6 @@
 add_executable(app
     bitset_algebra.cpp
+    bitset_algebra_test.cpp
     quine_mccluskey.cpp
     quine_mccluskey_test.cpp
     petrick.cpp

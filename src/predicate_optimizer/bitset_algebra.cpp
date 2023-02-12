@@ -1,6 +1,5 @@
 #include "predicate_optimizer/bitset_algebra.h"
-
-#include <sstream>
+#include "predicate_optimizer/stream_utils.h"
 
 namespace predicate_optimizer {
 
@@ -15,5 +14,9 @@ std::ostream& operator<<(std::ostream& os, const Minterm& minterm) {
 
 bool operator==(const Maxterm& lhs, const Maxterm& rhs) {
     return lhs.minterms == rhs.minterms;
+}
+
+std::ostream& operator<<(std::ostream& os, const Maxterm& maxterm) {
+    return os << maxterm.minterms;
 }
 }  // namespace predicate_optimizer

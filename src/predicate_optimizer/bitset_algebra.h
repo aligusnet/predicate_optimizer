@@ -13,6 +13,7 @@ inline Bitset operator""_b(const char* bits, size_t) {
 
 struct Minterm {
     Minterm() : bitset(0), mask(0){};
+    Minterm(const char* bits, const char* mask) : bitset{bits}, mask{mask} {}
     Minterm(size_t bitIndex, bool val) : bitset(0), mask(0) {
         bitset.set(bitIndex, val);
         mask.set(bitIndex, true);
@@ -72,6 +73,7 @@ inline Maxterm operator&(const Maxterm& lhs, const Maxterm& rhs) {
 bool operator==(const Minterm& lhs, const Minterm& rhs);
 std::ostream& operator<<(std::ostream& os, const Minterm& minterm);
 bool operator==(const Maxterm& lhs, const Maxterm& rhs);
+std::ostream& operator<<(std::ostream& os, const Maxterm& maxterm);
 
 }  // namespace predicate_optimizer
 
