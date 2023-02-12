@@ -1,4 +1,5 @@
 #include "expression.h"
+#include <iomanip>
 #include <sstream>
 
 namespace predicate_optimizer {
@@ -76,46 +77,47 @@ std::ostream& operator<<(std::ostream& os, const Expression& expr) {
 }
 
 std::ostream& operator<<(std::ostream& os, const LogicalExpression& expr) {
-    os << '(';
+    os << '{' << expr.op << ": [";
     for (size_t i = 0; i < expr.children.size(); ++i) {
         if (i != 0) {
-            os << ' ' << expr.op << ' ';
+            os << ", ";
         }
         os << expr.children[i];
     }
-    os << ')';
+    os << "]}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const ComparisonExpression& expr) {
-    os << '(' << expr.path << ' ' << expr.op << ' ' << expr.value << ')';
+    os << '{' << std::quoted(expr.path) << ": {" << expr.op << ": " << std::quoted(expr.value)
+       << "}}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const InExpression& expr) {
-    os << '(' << expr.path << ' ' << expr.op << " [";
+    os << '{' << std::quoted(expr.path) << ": {" << expr.op << ": [";
     for (size_t i = 0; i < expr.values.size(); ++i) {
         if (i != 0) {
             os << ", ";
         }
-        os << expr.values[i];
+        os << std::quoted(expr.values[i]);
     }
-    os << "])";
+    os << "]}}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const NotExpression& expr) {
-    os << '!' << expr.child;
+    os << "{\"$not\": " << expr.child << "}";
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const LogicalOperator& op) {
     switch (op) {
         case LogicalOperator::And:
-            os << "&&";
+            os << std::quoted("$and");
             break;
         case LogicalOperator::Or:
-            os << "||";
+            os << std::quoted("$or");
             break;
     }
     return os;
@@ -124,22 +126,22 @@ std::ostream& operator<<(std::ostream& os, const LogicalOperator& op) {
 std::ostream& operator<<(std::ostream& os, const ComparisonOperator& op) {
     switch (op) {
         case ComparisonOperator::EQ:
-            os << "==";
+            os << std::quoted("$eq");
             break;
         case ComparisonOperator::GE:
-            os << ">=";
+            os << std::quoted("$gte");
             break;
         case ComparisonOperator::GT:
-            os << ">";
+            os << std::quoted("$gt");
             break;
         case ComparisonOperator::LE:
-            os << "<=";
+            os << std::quoted("$lte");
             break;
         case ComparisonOperator::LT:
-            os << "<";
+            os << std::quoted("$lt");
             break;
         case ComparisonOperator::NE:
-            os << "!=";
+            os << std::quoted("$ne");
             break;
     }
     return os;
@@ -148,10 +150,10 @@ std::ostream& operator<<(std::ostream& os, const ComparisonOperator& op) {
 std::ostream& operator<<(std::ostream& os, const InOperator& op) {
     switch (op) {
         case InOperator::In:
-            os << "in";
+            os << std::quoted("$in");
             break;
         case InOperator::NotIn:
-            os << "not in";
+            os << std::quoted("$nin");
             break;
     }
     return os;
