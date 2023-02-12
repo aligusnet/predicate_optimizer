@@ -1,5 +1,6 @@
 #pragma once
 
+#include "predicate_optimizer/hash.h"
 #include <iosfwd>
 #include <mongodb/polyvalue.h>
 #include <string>
@@ -18,7 +19,7 @@ using Expression =
 using Path = std::string;
 using Value = std::string;
 
-enum LogicalOperator { And, Or };
+enum class LogicalOperator { And, Or };
 
 struct LogicalExpression {
     LogicalOperator op;
@@ -28,9 +29,16 @@ struct LogicalExpression {
         : op(op), children(std::move(children)) {}
 
     bool operator==(const LogicalExpression& other) const;
+
+    std::size_t hash() const {
+        std::size_t seed = 1823;
+        std::hash_combine(seed, op);
+        std::hash_combine(seed, children);
+        return seed;
+    }
 };
 
-enum ComparisonOperator { EQ, NE, GT, GE, LE, LT };
+enum class ComparisonOperator { EQ, NE, GT, GE, LE, LT };
 
 struct ComparisonExpression {
     ComparisonOperator op;
@@ -41,9 +49,17 @@ struct ComparisonExpression {
         : op(op), path(std::move(path)), value(std::move(value)) {}
 
     bool operator==(const ComparisonExpression& other) const;
+
+    std::size_t hash() const {
+        std::size_t seed = 2311;
+        std::hash_combine(seed, op);
+        std::hash_combine(seed, path);
+        std::hash_combine(seed, value);
+        return seed;
+    }
 };
 
-enum InOperator { In, NotIn };
+enum class InOperator { In, NotIn };
 struct InExpression {
     InOperator op;
     Path path;
@@ -53,6 +69,14 @@ struct InExpression {
         : op(op), path(std::move(path)), values(std::move(values)) {}
 
     bool operator==(const InExpression& other) const;
+
+    std::size_t hash() const {
+        std::size_t seed = 3181;
+        std::hash_combine(seed, op);
+        std::hash_combine(seed, path);
+        std::hash_combine(seed, values);
+        return seed;
+    }
 };
 
 struct NotExpression {
@@ -63,6 +87,12 @@ struct NotExpression {
     bool compareEq(const Expression& expr) const;
 
     bool operator==(const NotExpression& other) const;
+
+    std::size_t hash() const {
+        std::size_t seed = 3821;
+        std::hash_combine(seed, child);
+        return seed;
+    }
 };
 
 inline bool operator!=(const Expression& lhs, const Expression& rhs) {
@@ -80,3 +110,20 @@ std::ostream& operator<<(std::ostream& os, const ComparisonOperator& op);
 std::ostream& operator<<(std::ostream& os, const InOperator& op);
 
 }  // namespace predicate_optimizer
+
+namespace std {
+template <>
+struct hash<predicate_optimizer::Expression> {
+    using argument_type = predicate_optimizer::Expression;
+    using result_type = std::size_t;
+
+    result_type operator()(argument_type const& v) const {
+        return v.visit(*this);
+    }
+
+    template <typename E>
+    inline std::size_t operator()(const argument_type&, const E& expr) const {
+        return expr.hash();
+    }
+};
+}  // namespace std

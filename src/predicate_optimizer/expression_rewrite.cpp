@@ -172,8 +172,10 @@ struct DNFTransformer {
                 switch (childExpr->op) {
                     case LogicalOperator::And:
                         children.emplace_back(std::move(processed));
+                        break;
                     case LogicalOperator::Or:
                         move(children, childExpr->children);
+                        break;
                 }
             } else {
                 children.emplace_back(std::move(child));
