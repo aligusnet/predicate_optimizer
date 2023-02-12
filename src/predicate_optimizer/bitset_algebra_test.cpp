@@ -56,6 +56,24 @@ TEST_CASE("Minterm operations") {
         auto result = acnbd & b;
         REQUIRE(expectedResult == result);
     }
+
+    SECTION("flip") {
+        REQUIRE(Minterm{"0001", "0001"} == Minterm{"0000", "0001"}.flip());
+        REQUIRE(Minterm{"00110010", "00111111"} == Minterm{"00001101", "00111111"}.flip());
+    }
+
+    SECTION("not") {
+        Minterm a{"00010001", "00110011"};
+        Maxterm expectedResult({
+            {"00000000", "00000001"},
+            {"00000010", "00000010"},
+            {"00000000", "00010000"},
+            {"00100000", "00100000"},
+        });
+
+        auto result = ~a;
+        REQUIRE(expectedResult == result);
+    }
 }
 
 TEST_CASE("Maxterm operation") {
@@ -172,6 +190,23 @@ TEST_CASE("Maxterm operation") {
         };
 
         auto result = a_b & c_nd;
+        REQUIRE(expectedResult == result);
+    }
+
+    SECTION("not (BC | A~D)") {
+        Maxterm bc_and{
+            {"0110", "0110"},
+            {"0001", "1001"},
+        };
+
+        Maxterm expectedResult{
+            {"0000", "0011"},
+            {"1000", "1010"},
+            {"0000", "0101"},
+            {"1000", "1100"},
+        };
+
+        auto result = ~bc_and;
         REQUIRE(expectedResult == result);
     }
 }

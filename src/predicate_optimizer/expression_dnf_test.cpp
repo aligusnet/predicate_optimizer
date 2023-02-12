@@ -223,5 +223,41 @@ TEST_CASE("DNF", "") {
         REQUIRE(expectedResult == actualResult);
         REQUIRE(expectedMap == actualMap);
     }
+
+    SECTION("~(a > 1 | b > 1) & (a < 2 | b < 2)") {
+        auto expr = makeNot(makeAnd({
+            makeOr({makeGt("a", "1"), makeGt("b", "1")}),
+            makeOr({makeLt("a", "2"), makeLt("b", "2")}),
+        }));
+
+        Maxterm expectedResult{
+            {"0000", "0011"},
+            {"1000", "1011"},
+            {"0100", "0111"},
+            {"1100", "1101"},
+            {"1000", "1011"},
+            {"1000", "1011"},
+            {"1100", "1111"},
+            {"1100", "1101"},
+            {"0100", "0111"},
+            {"1100", "1111"},
+            {"0100", "0111"},
+            {"1100", "1101"},
+            {"1100", "1110"},
+            {"1100", "1110"},
+            {"1100", "1110"},
+            {"1100", "1100"},
+        };
+        std::unordered_map<Expression, size_t> expectedMap{
+            {makeGt("a", "1"), 0},
+            {makeGt("b", "1"), 1},
+            {makeGe("a", "2"), 2},
+            {makeGe("b", "2"), 3},
+        };
+
+        auto [actualResult, actualMap] = transformToNormalForm(expr);
+        REQUIRE(expectedResult == actualResult);
+        REQUIRE(expectedMap == actualMap);
+    }
 }
 }  // namespace predicate_optimizer

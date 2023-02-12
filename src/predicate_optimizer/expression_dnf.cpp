@@ -31,7 +31,7 @@ struct NormalFormVisitor {
     }
 
     Maxterm operator()(const Expression&, const NotExpression& expr) {
-        return {};
+        return ~expr.child.visit(*this);
     }
 
     Maxterm processAnd(const LogicalExpression& expr) {
