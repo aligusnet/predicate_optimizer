@@ -85,14 +85,13 @@ QmcTable combine(QmcTable& table) {
 }
 }  // namespace
 
-bool operator==(const Minterm& lhs, const Minterm& rhs) {
-    return lhs.bitset == rhs.bitset && lhs.mask == rhs.mask &&
-        lhs.coveredMinterms == rhs.coveredMinterms;
+bool operator==(const QMCResult& lhs, const QMCResult& rhs) {
+    return lhs.minterm == rhs.minterm && lhs.coveredMinterms == rhs.coveredMinterms;
 }
 
-std::ostream& operator<<(std::ostream& os, const Minterm& minterm) {
-    os << '(' << minterm.bitset << ", " << minterm.mask << ") ";
-    os << '[';
+std::ostream& operator<<(std::ostream& os, const QMCResult& minterm) {
+    os << minterm.minterm;
+    os << " [";
     for (size_t i = 0; i < minterm.coveredMinterms.size(); ++i) {
         if (i != 0) {
             os << ", ";
@@ -103,9 +102,9 @@ std::ostream& operator<<(std::ostream& os, const Minterm& minterm) {
     return os;
 }
 
-std::unordered_set<Minterm> quine_mccluskey(std::vector<Minterm> minterms) {
+std::unordered_set<QMCResult> quine_mccluskey(std::vector<Minterm> minterms) {
     QmcTable table{std::move(minterms)};
-    std::unordered_set<Minterm> result{};
+    std::unordered_set<QMCResult> result{};
 
     while (!table.empty()) {
         auto combinedTable = combine(table);

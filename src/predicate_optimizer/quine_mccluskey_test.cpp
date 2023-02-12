@@ -4,11 +4,6 @@
 #include "quine_mccluskey.h"
 
 namespace predicate_optimizer {
-
-Bitset operator""_b(const char* bits, size_t) {
-    return Bitset{bits};
-}
-
 TEST_CASE("Quine-mcCluskey", "") {
     SECTION("AB | A~B = A") {
         Bitset mask{"11"};
@@ -16,7 +11,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"10"_b, mask},
             {"11"_b, mask},
         };
-        std::unordered_set<Minterm> expectedResult{
+        std::unordered_set<QMCResult> expectedResult{
             {"10"_b, "10"_b, {0, 1}},
         };
 
@@ -30,7 +25,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"111"_b, mask},
             {"101"_b, mask},
         };
-        std::unordered_set<Minterm> expectedResult{
+        std::unordered_set<QMCResult> expectedResult{
             {"101"_b, "101"_b, {0, 1}},
         };
 
@@ -45,7 +40,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"101"_b, mask},
             {"110"_b, mask},
         };
-        std::unordered_set<Minterm> expectedResult{
+        std::unordered_set<QMCResult> expectedResult{
             {"101"_b, "101"_b, {0, 1}},
             {"110"_b, "110"_b, {0, 2}},
         };
@@ -62,7 +57,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"0100"_b, mask},
             {"0101"_b, mask},
         };
-        std::unordered_set<Minterm> expectedResult{
+        std::unordered_set<QMCResult> expectedResult{
             {"0000"_b, "1010"_b, {0, 1, 2, 3}},
         };
 
@@ -78,9 +73,9 @@ TEST_CASE("Quine-mcCluskey", "") {
                                       {"0101"_b, mask},
                                       {"0111"_b, mask},
                                       {"1011"_b, mask}};
-        std::unordered_set<Minterm> expectedResult{{"1011"_b, "1111"_b, {5}},
-                                                   {"0101"_b, "1101"_b, {3, 4}},
-                                                   {"0000"_b, "1010"_b, {0, 1, 2, 3}}};
+        std::unordered_set<QMCResult> expectedResult{{"1011"_b, "1111"_b, {5}},
+                                                     {"0101"_b, "1101"_b, {3, 4}},
+                                                     {"0000"_b, "1010"_b, {0, 1, 2, 3}}};
 
         auto result = quine_mccluskey(std::move(minterms));
         REQUIRE(expectedResult == result);
@@ -97,7 +92,7 @@ TEST_CASE("Quine-mcCluskey", "") {
             {"111"_b, mask},
         };
 
-        std::unordered_set<Minterm> expectedResult{
+        std::unordered_set<QMCResult> expectedResult{
             {"000"_b, "101"_b, {0, 1}},
             {"000"_b, "011"_b, {0, 2}},
             {"010"_b, "110"_b, {1, 3}},

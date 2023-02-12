@@ -1,4 +1,5 @@
 add_executable(app
+    bitset_algebra.cpp
     quine_mccluskey.cpp
     quine_mccluskey_test.cpp
     petrick.cpp
@@ -6,6 +7,8 @@ add_executable(app
     expression.cpp
     expression_rewrite.cpp
     expression_rewrite_test.cpp
+    expression_dnf.cpp
+    expression_dnf_test.cpp
 )
 
 target_link_libraries(app catch2)
