@@ -1,3 +1,5 @@
+#pragma once
+
 #include "predicate_optimizer/hash.h"
 #include <bitset>
 #include <iosfwd>
@@ -38,6 +40,11 @@ struct Minterm {
 
     Minterm flip() const {
         return {~bitset & mask, mask};
+    }
+
+    void set(size_t bitIndex, bool value) {
+        mask.set(bitIndex);
+        bitset.set(bitIndex, value);
     }
 
     Maxterm operator~() const;

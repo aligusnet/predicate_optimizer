@@ -1,3 +1,4 @@
+#include <optional>
 #include <sstream>
 #include <vector>
 
@@ -13,6 +14,16 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
         os << v[i];
     }
     os << ']';
+    return os;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& val) {
+    if (val) {
+        os << *val;
+    } else {
+        os << "<nullopt>";
+    }
     return os;
 }
 
