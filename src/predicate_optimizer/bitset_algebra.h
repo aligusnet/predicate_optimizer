@@ -47,6 +47,10 @@ struct Minterm {
         bitset.set(bitIndex, value);
     }
 
+    inline Bitset getConflicts(const Minterm& other) const {
+        return (bitset ^ other.bitset) & (mask & other.mask);
+    }
+
     Maxterm operator~() const;
 
     Bitset bitset;
@@ -54,8 +58,7 @@ struct Minterm {
 };
 
 inline Maxterm operator&(const Minterm& lhs, const Minterm& rhs) {
-    const bool hasConflictingBits = ((lhs.bitset ^ rhs.bitset) & (lhs.mask & rhs.mask)).any();
-    if (hasConflictingBits) {
+    if (lhs.getConflicts(rhs).any()) {
         return {};
     }
     return {{Minterm(lhs.bitset | rhs.bitset, lhs.mask | rhs.mask)}};

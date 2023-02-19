@@ -1,4 +1,5 @@
 #include "predicate_optimizer/expression_dnf.h"
+#include "predicate_optimizer/expression.h"
 
 namespace predicate_optimizer {
 namespace {
@@ -55,12 +56,8 @@ struct NormalFormVisitor {
     }
 
     Maxterm processLeafPredicate(const Expression& expr, bool isSet) {
-        auto it = _map.find(expr);
-        if (it != _map.end()) {
-            return {Minterm(it->second, isSet)};
-        }
-        _map[expr] = _nextBit++;
-        return {Minterm(_nextBit - 1, isSet)};
+        auto bitIndex = getExpressionIndex(expr);
+        return {Minterm(bitIndex, isSet)};
     }
 
     bool isGreaterEqual(const ComparisonExpression& expr) const {
@@ -100,18 +97,30 @@ struct NormalFormVisitor {
         }
     }
 
-    size_t _nextBit{0};
-
     // maps n expression to the index of its corresponding bit.
     std::unordered_map<Expression, size_t> _map;
+
+    std::vector<Expression> _expressions;
+
+    size_t getExpressionIndex(const Expression& expr) {
+        auto pos = _map.find(expr);
+        if (pos != _map.end()) {
+            return pos->second;
+        }
+
+        size_t index = _expressions.size();
+        _expressions.emplace_back(expr);
+        _map[expr] = index;
+        return index;
+    }
 };
 
 }  // namespace
 
-std::pair<Maxterm, std::unordered_map<Expression, size_t>> transformToNormalForm(Expression expr) {
+std::pair<Maxterm, std::vector<Expression>> transformToNormalForm(Expression expr) {
     NormalFormVisitor visitor{};
     auto maxterm = expr.visit(visitor);
-    return {maxterm, visitor._map};
+    return {maxterm, visitor._expressions};
 }
 
 }  // namespace predicate_optimizer

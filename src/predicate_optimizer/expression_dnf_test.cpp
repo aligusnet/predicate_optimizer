@@ -8,25 +8,25 @@ TEST_CASE("DNF", "") {
     SECTION("a == 1") {
         auto expr = makeEq("a", "1");
         Maxterm expectedResult{{"1"_b, "1"_b}};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeEq("a", "1"), 0},
+        std::vector<Expression> expectedExpressions{
+            makeEq("a", "1"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        //  REQUIRE(expectedMap == actualMap);
+        //  REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a < 1") {
         auto expr = makeLt("a", "1");
         Maxterm expectedResult{{"0"_b, "1"_b}};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGe("a", "1"), 0},
+        std::vector<Expression> expectedExpressions{
+            makeGe("a", "1"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a > 10 | b <= 5") {
@@ -39,14 +39,14 @@ TEST_CASE("DNF", "") {
             {"01"_b, "01"_b},
             {"00"_b, "10"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "10"), 0},
-            {makeGt("b", "5"), 1},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "10"),
+            makeGt("b", "5"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a > 10 | a <= 10") {
@@ -59,13 +59,13 @@ TEST_CASE("DNF", "") {
             {"1"_b, "1"_b},
             {"0"_b, "1"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "10"), 0},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "10"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a > 10 & b <= 5") {
@@ -77,14 +77,14 @@ TEST_CASE("DNF", "") {
         Maxterm expectedResult{
             {"01"_b, "11"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "10"), 0},
-            {makeGt("b", "5"), 1},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "10"),
+            makeGt("b", "5"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a > 10 & a <= 10") {
@@ -95,13 +95,13 @@ TEST_CASE("DNF", "") {
 
         // a > 10 & a <= 10 can never be true
         Maxterm expectedResult{};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "10"), 0},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "10"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("(a > 1 | b > 1) & (a < 2 | b < 2)") {
@@ -116,16 +116,16 @@ TEST_CASE("DNF", "") {
             {"0010"_b, "0110"_b},
             {"0010"_b, "1010"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "1"), 0},
-            {makeGt("b", "1"), 1},
-            {makeGe("a", "2"), 2},
-            {makeGe("b", "2"), 3},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "1"),
+            makeGt("b", "1"),
+            makeGe("a", "2"),
+            makeGe("b", "2"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("(a > 1 | b > 1) & (a <= 1 | b <= 1)") {
@@ -138,38 +138,38 @@ TEST_CASE("DNF", "") {
             {"01"_b, "11"_b},
             {"10"_b, "11"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "1"), 0},
-            {makeGt("b", "1"), 1},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "1"),
+            makeGt("b", "1"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a in [1, 2]") {
         auto expr = makeIn("a", {"1", "2"});
         Maxterm expectedResult{{"1"_b, "1"_b}};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeIn("a", {"1", "2"}), 0},
+        std::vector<Expression> expectedExpressions{
+            makeIn("a", {"1", "2"}),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("a not in [1, 2]") {
         auto expr = makeNotIn("a", {"1", "2"});
         Maxterm expectedResult{{"0"_b, "1"_b}};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeIn("a", {"1", "2"}), 0},
+        std::vector<Expression> expectedExpressions{
+            makeIn("a", {"1", "2"}),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("(a in [1, 2]) & (a not in [1, 2])") {
@@ -178,13 +178,13 @@ TEST_CASE("DNF", "") {
             makeNotIn("a", {"1", "2"}),
         });
         Maxterm expectedResult{};
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeIn("a", {"1", "2"}), 0},
+        std::vector<Expression> expectedExpressions{
+            makeIn("a", {"1", "2"}),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("(a not in [1, 2]) & (a in [1, 2, 3])") {
@@ -195,14 +195,14 @@ TEST_CASE("DNF", "") {
         Maxterm expectedResult{
             {"10"_b, "11"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeIn("a", {"1", "2"}), 0},
-            {makeIn("a", {"1", "2", "3"}), 1},
+        std::vector<Expression> expectedExpressions{
+            makeIn("a", {"1", "2"}),
+            makeIn("a", {"1", "2", "3"}),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("(a not in [1, 2]) | (a in [1, 2, 3])") {
@@ -214,14 +214,14 @@ TEST_CASE("DNF", "") {
             {"00"_b, "01"_b},
             {"10"_b, "10"_b},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeIn("a", {"1", "2"}), 0},
-            {makeIn("a", {"1", "2", "3"}), 1},
+        std::vector<Expression> expectedExpressions{
+            makeIn("a", {"1", "2"}),
+            makeIn("a", {"1", "2", "3"}),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 
     SECTION("~(a > 1 | b > 1) & (a < 2 | b < 2)") {
@@ -248,16 +248,16 @@ TEST_CASE("DNF", "") {
             {"1100", "1110"},
             {"1100", "1100"},
         };
-        std::unordered_map<Expression, size_t> expectedMap{
-            {makeGt("a", "1"), 0},
-            {makeGt("b", "1"), 1},
-            {makeGe("a", "2"), 2},
-            {makeGe("b", "2"), 3},
+        std::vector<Expression> expectedExpressions{
+            makeGt("a", "1"),
+            makeGt("b", "1"),
+            makeGe("a", "2"),
+            makeGe("b", "2"),
         };
 
         auto [actualResult, actualMap] = transformToNormalForm(expr);
         REQUIRE(expectedResult == actualResult);
-        REQUIRE(expectedMap == actualMap);
+        REQUIRE(expectedExpressions == actualMap);
     }
 }
 }  // namespace predicate_optimizer
